@@ -1137,6 +1137,13 @@ function pintarResultado() {
   $('resultado-palabras').replaceChildren(...dia.map((p, i) => tarjetaPalabra(p, rondas[i])));
 
   // Estadísticas
+  pintarEstadisticas($('estadisticas'));
+
+  iniciarCuentaAtras();
+}
+
+// Jugadas, aciertos y rachas: al final de la partida y en la ventana de estadísticas.
+function pintarEstadisticas(stats) {
   const s = datos.stats;
   const cifras = [
     [s.jugadas, 'Jugadas'],
@@ -1144,7 +1151,6 @@ function pintarResultado() {
     [rachaActual(), 'Racha actual'],
     [s.mejor, 'Mejor racha'],
   ];
-  const stats = $('estadisticas');
   stats.replaceChildren();
   for (const [valor, nombre] of cifras) {
     const div = document.createElement('div');
@@ -1157,8 +1163,6 @@ function pintarResultado() {
     div.append(n, t);
     stats.appendChild(div);
   }
-
-  iniciarCuentaAtras();
 }
 
 function pintar(animar = false) {
@@ -1224,8 +1228,14 @@ function prepararAyuda() {
   $('ayuda').addEventListener('close', () => {
     if (!datos.ayudaVista) { datos.ayudaVista = true; guardarDatos(); }
   });
+  $('boton-estadisticas').addEventListener('click', () => {
+    pintarEstadisticas($('estadisticas-ventana'));
+    $('ventana-estadisticas').showModal();
+  });
   // Cerrar tocando fuera del cuadro
-  $('ayuda').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  for (const id of ['ayuda', 'ventana-estadisticas']) {
+    $(id).addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  }
 }
 
 /* ---------- Portada ---------- */

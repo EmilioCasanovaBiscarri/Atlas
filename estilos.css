@@ -182,6 +182,10 @@ button { font: inherit; color: inherit; }
   cursor: pointer;
 }
 
+/* Estadísticas: icono de barras sin borde, como en los demás juegos del Almanaque. */
+.boton-icono--liso { display: grid; place-items: center; border-color: transparent; background: transparent; }
+.boton-icono svg { width: 1.4rem; height: 1.4rem; fill: none; stroke: var(--tinta); stroke-width: 2; stroke-linecap: round; }
+
 .etiqueta:focus-visible { outline: none; }
 
 .boton-icono:focus-visible,
