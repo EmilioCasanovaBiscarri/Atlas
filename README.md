@@ -98,3 +98,7 @@ Sube el repositorio a GitHub y, en *Settings → Pages*, elige *Deploy from a br
 rama `main` y carpeta `/ (root)`. Quedará en `https://joseleking.github.io/Atlas/`.
 
 Si cambias la lista de archivos de `sw.js`, sube su `VERSION` (`atlas-v2`…).
+
+## Derechos de autor
+
+© 2026 Emilio Casanova Biscarri. Todos los derechos reservados. El código, los textos y los diseños de este repositorio no pueden copiarse ni reutilizarse sin permiso.
