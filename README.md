@@ -3,7 +3,7 @@
 Juego diario de palabras del español. Cada día aparecen tres palabras que solo se usan
 en algunos lugares del mundo hispanohablante y, una tras otra, hay que tocar en el
 mapa un lugar donde se diga cada una. Tres intentos por palabra, con pistas de
-distancia, dirección y región. Forma parte de la colección de [Almanaque](https://joseleking.github.io/Almanaque/).
+distancia, dirección y región. Forma parte de la colección de [Almanaque](https://emiliocasanovabiscarri.github.io/Almanaque/).
 
 Es una web estática (HTML, CSS y JavaScript, sin frameworks ni compilación), lista
 para GitHub Pages e instalable como aplicación (PWA).
@@ -95,7 +95,7 @@ y abre <http://localhost:8000>.
 ## Publicar en GitHub Pages
 
 Sube el repositorio a GitHub y, en *Settings → Pages*, elige *Deploy from a branch*,
-rama `main` y carpeta `/ (root)`. Quedará en `https://joseleking.github.io/Atlas/`.
+rama `main` y carpeta `/ (root)`. Quedará en `https://emiliocasanovabiscarri.github.io/Atlas/`.
 
 Si cambias la lista de archivos de `sw.js`, sube su `VERSION` (`atlas-v2`…).
 

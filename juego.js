@@ -1183,10 +1183,10 @@ function pintar(animar = false) {
 
 // Una marca por palabra: ▰ acertada, ▱ fallada. Ejemplo:
 //   Atlas nº 7 ▰▱▰ 2/3 aciertos
-//   joseleking.github.io/Atlas
+//   emiliocasanovabiscarri.github.io/Atlas
 function textoCompartir() {
   const marcas = rondas.map((lista) => (lista.some((i) => i.acierto) ? '▰' : '▱')).join('');
-  return `Atlas nº ${numero} ${marcas} ${acertadas()}/${rondas.length} aciertos\njoseleking.github.io/Atlas`;
+  return `Atlas nº ${numero} ${marcas} ${acertadas()}/${rondas.length} aciertos\nemiliocasanovabiscarri.github.io/Atlas`;
 }
 
 async function compartir() {
