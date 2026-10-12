@@ -816,24 +816,83 @@ button { font: inherit; color: inherit; }
   font-size: .9rem;
 }
 
-/* ---------- Resultado ---------- */
+/* ---------- Resultado ----------
+   Igual en todos los juegos del Almanaque: ficha con el resultado, una línea por palabra,
+   estadísticas y botones. Al terminar se ocultan la palabra y el mapa, y todo cabe en el
+   móvil sin desplazarse hasta los botones. */
 
-.resultado { animation: fundido .5s ease both; }
+#juego.terminada #palabra-bloque,
+#juego.terminada .mapa-hueco { display: none; }
 
-.resultado__titulo {
-  margin: 0;
-  font-family: var(--titulos);
-  font-weight: normal;
-  font-size: 1.6rem;
+.resultado { padding-top: 12px; animation: fundido .5s ease both; }
+
+.ficha-final {
+  padding: 10px 16px 12px;
+  border: 1px solid var(--linea);
+  outline: 1px solid var(--linea);
+  outline-offset: -5px;
+  border-radius: 2px;
+  background: var(--papel);
   text-align: center;
 }
 
-.resultado__lugares { margin: 6px 0 0; text-align: center; }
+.marcas { display: flex; justify-content: center; gap: 10px; margin: 2px 0 0; }
+.marcas svg { width: 24px; height: 24px; overflow: visible; stroke-width: 1.4; }
+.marcas .bien circle { fill: var(--acento); stroke: var(--acento); }
+.marcas .bien path { fill: none; stroke: var(--papel); }
+.marcas .mal circle,
+.marcas .mal path { fill: none; stroke: var(--rotulo); }
 
-/* Tarjeta de cada palabra del día */
+.resultado__cifra {
+  margin: 2px 0 0;
+  /* Las cifras de IM Fell son de estilo antiguo y el 1 parece una I */
+  font-family: var(--texto);
+  font-variant-numeric: lining-nums;
+  font-weight: 500;
+  font-size: 2.4rem;
+  line-height: 1.05;
+}
+
+.resultado__cifra small { font-family: var(--titulos); font-size: .55em; opacity: .75; }
+
+.resultado__frase { margin: 2px 0 0; font-style: italic; font-size: 1.1rem; opacity: .8; }
+
+.lista-final { margin: 8px 0 0; padding: 0; list-style: none; }
+.lista-final li { border-bottom: 1px solid var(--linea); }
+
+.lista-final summary {
+  display: grid;
+  grid-template-columns: 24px auto 1fr 14px;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 42px;
+  padding: 7px 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.lista-final summary::-webkit-details-marker { display: none; }
+
+.lista-final summary::after {
+  content: '›';
+  font-size: 1.2rem;
+  line-height: 1;
+  opacity: .6;
+  transition: transform .2s ease;
+}
+
+.lista-final details[open] summary::after { transform: rotate(90deg); }
+
+.lista-final .marca { font-weight: 600; text-align: center; }
+.lista-final .marca.bien { color: var(--acento); }
+.lista-final .marca.mal { opacity: .6; }
+.lista-final__palabra { font-family: var(--titulos); font-size: 1.3rem; }
+.lista-final__significado { text-align: right; font-style: italic; opacity: .75; }
+.lista-final__detalle { padding: 0 0 12px 32px; }
+.lista-final__detalle .subtitulo { margin: 12px 0 6px; font-size: 1.05rem; }
+
 .resultado__veredicto {
   margin: 0;
-  text-align: center;
   font-size: .85rem;
   letter-spacing: .08em;
   font-variant: small-caps;
@@ -842,49 +901,7 @@ button { font: inherit; color: inherit; }
 
 .resultado__veredicto--acierto { color: var(--acento); opacity: 1; }
 
-.resultado__texto {
-  margin: 0;
-  font-family: var(--titulos);
-  font-weight: normal;
-  font-size: 1.9rem;
-  line-height: 1.1;
-  text-align: center;
-  overflow-wrap: anywhere;
-}
-
-.resultado__palabra .subtitulo { margin-top: 14px; }
-
-/* Desplegable: se abre tocando la palabra */
-.resultado__resumen {
-  display: block;
-  list-style: none;
-  cursor: pointer;
-}
-
-.resultado__resumen::-webkit-details-marker { display: none; }
-
-.resultado__resumen:focus-visible {
-  outline: 2px solid var(--acento);
-  outline-offset: 4px;
-}
-
-.resultado__mas {
-  display: block;
-  margin-top: 8px;
-  text-align: center;
-  font-size: .85rem;
-  letter-spacing: .08em;
-  font-variant: small-caps;
-  color: var(--acento);
-}
-
-.resultado__mas::after {
-  content: ' ▾';
-  display: inline-block;
-  transition: transform .2s ease;
-}
-
-details[open] .resultado__mas::after { transform: rotate(180deg); }
+.resultado__lugares { margin: 4px 0 0; }
 
 .equivalentes {
   margin: 0;
@@ -922,6 +939,19 @@ details[open] .resultado__mas::after { transform: rotate(180deg); }
   opacity: .75;
 }
 
+/* En la pantalla final, las estadísticas van en una franja entre filetes dobles. */
+.resultado .estadisticas {
+  margin: 12px 0 0;
+  padding: 6px 0;
+  border-top: 3px double var(--linea);
+  border-bottom: 3px double var(--linea);
+}
+.resultado .estadistica__numero { font-size: 1.35rem; }
+.resultado .estadistica__nombre { white-space: nowrap; }
+.resultado .boton { min-height: 48px; }
+.resultado .estadisticas + .boton { margin-top: 12px; }
+.resultado .boton--enlace { margin-top: 8px; }
+
 .copiado {
   margin: 6px 0 0;
   min-height: 1.3em;
@@ -937,6 +967,23 @@ details[open] .resultado__mas::after { transform: rotate(180deg); }
 }
 
 #cuenta-atras { font-variant-numeric: tabular-nums; font-weight: 500; }
+
+/* En pantallas bajas (iPhone SE, Android pequeños) las estadísticas bajan bajo los botones,
+   para que Compartir, Siguiente juego y Regresar se vean sin desplazarse. */
+@media (max-height: 660px) {
+  .resultado:not([hidden]) { display: flex; flex-direction: column; padding-top: 8px; }
+  .resultado > .estadisticas,
+  .resultado > .copiado,
+  .resultado > .cuenta-atras { order: 1; }
+  .resultado .lista-final + .boton { margin-top: 12px; }
+  .resultado:not([hidden]) { padding-top: 4px; }
+  .ficha-final { padding: 6px 16px 8px; }
+  .marcas svg { width: 20px; height: 20px; }
+  .resultado__cifra { font-size: 2.1rem; }
+  .lista-final summary { min-height: 38px; padding: 4px 0; }
+  .resultado .boton { min-height: 46px; }
+  .resultado .boton--enlace { margin-top: 6px; }
+}
 
 /* ---------- Diálogo de ayuda ---------- */
 

@@ -148,22 +148,23 @@
       </div>
 
       <!-- Resultado (aparece al terminar) -->
-      <section class="resultado" id="resultado" hidden>
-        <div class="tarjeta">
-          <h2 class="resultado__titulo" id="resultado-titulo"></h2>
+      <!-- Igual en todos los juegos del Almanaque: ficha con el resultado, una línea por palabra,
+           estadísticas y botones, que se ven sin desplazarse (el mapa se oculta al terminar). -->
+      <section class="resultado" id="resultado" aria-label="Resultado de hoy" hidden>
+        <div class="ficha-final">
+          <p class="marcas" id="resultado-marcas" role="img"></p>
+          <h2 class="resultado__cifra" id="resultado-cifra"></h2>
+          <p class="resultado__frase" id="resultado-frase"></p>
         </div>
 
-        <!-- Una tarjeta por palabra: solución, equivalentes y curiosidad (se crean desde juego.js) -->
-        <div id="resultado-palabras"></div>
+        <!-- Una línea por palabra: se despliega con la solución, los equivalentes y la curiosidad (desde juego.js) -->
+        <ol class="lista-final" id="resultado-palabras" aria-label="Toca una palabra para saber más"></ol>
 
-        <div class="tarjeta">
-          <h3 class="subtitulo">Estadísticas</h3>
-          <div class="estadisticas" id="estadisticas"></div>
-          <button class="boton boton--principal boton--ancho" id="boton-compartir" type="button">Compartir</button>
-          <a class="boton boton--ancho boton--enlace" data-almanaque-volver hidden href="https://joseleking.github.io/Almanaque/">☜ Regresar al Almanaque</a>
-          <p class="copiado" id="copiado" role="status"></p>
-          <p class="cuenta-atras">Próximas palabras en <span id="cuenta-atras">--:--:--</span></p>
-        </div>
+        <div class="estadisticas" id="estadisticas"></div>
+        <button class="boton boton--principal boton--ancho" id="boton-compartir" type="button">Compartir</button>
+        <a class="boton boton--ancho boton--enlace" data-almanaque-volver hidden href="https://joseleking.github.io/Almanaque/">☜ Regresar al Almanaque</a>
+        <p class="copiado" id="copiado" role="status"></p>
+        <p class="cuenta-atras">Próximas palabras en <span id="cuenta-atras">--:--:--</span></p>
       </section>
     </main>
   </div>

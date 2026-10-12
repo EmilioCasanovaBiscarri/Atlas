@@ -1038,7 +1038,6 @@ function pintarTarjetaPista(ultimo, anterior, animar) {
 }
 
 const ORDINALES = ['a la primera', 'al segundo intento', 'al tercer intento'];
-const CUANTAS = ['ninguna', 'una', 'dos', 'tres', 'cuatro', 'cinco'];
 
 function listaConY(nombres) {
   return nombres.length > 1 ? `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}` : nombres[0] || '';
@@ -1064,18 +1063,12 @@ function crear(etiqueta, clase, texto) {
   return el;
 }
 
-// Tarjeta del resultado con la solución de una palabra. A la vista quedan la
-// palabra, su significado y dónde se dice; los equivalentes y la curiosidad se
-// despliegan al tocar la palabra.
-function tarjetaPalabra(p, lista) {
+// Línea del resultado con la solución de una palabra: a la vista, la marca, la
+// palabra y su significado; al desplegarla, si se acertó, dónde se dice, los
+// equivalentes y la curiosidad.
+function lineaPalabra(p, lista) {
   const ultimo = lista[lista.length - 1];
   const acierto = !!(ultimo && ultimo.acierto);
-  const cabecera = [];
-  if (dia.length > 1) {
-    cabecera.push(crear('p', 'resultado__veredicto' + (acierto ? ' resultado__veredicto--acierto' : ''),
-      acierto ? `Acertada ${ORDINALES[lista.length - 1]}` : 'No acertada'));
-    cabecera.push(crear('h3', 'resultado__texto', p.palabra));
-  }
   // El significado no se muestra durante la partida: se desvela aquí.
   const sentidos = significados(p);
   let texto;
@@ -1086,55 +1079,69 @@ function tarjetaPalabra(p, lista) {
     const significado = sentidos.length ? ` significa «${sentidos[0].significado}» y` : '';
     texto = `«${p.palabra}»${significado} se dice en ${listaConY(nombresLugares(p.lugares))}.`;
   }
-  cabecera.push(crear('p', 'resultado__lugares', texto));
 
-  const mas = [];
+  const resumen = crear('summary');
+  const marca = crear('span', 'marca ' + (acierto ? 'bien' : 'mal'), acierto ? '✓' : '✗');
+  marca.setAttribute('aria-label', acierto ? 'Acierto' : 'Fallo');
+  resumen.append(
+    marca,
+    crear('span', 'lista-final__palabra', p.palabra),
+    crear('span', 'lista-final__significado', sentidos.length ? sentidos[0].significado : ''),
+  );
+
+  const detalle = crear('div', 'lista-final__detalle');
+  detalle.append(
+    crear('p', 'resultado__veredicto' + (acierto ? ' resultado__veredicto--acierto' : ''),
+      acierto ? `Acertada ${ORDINALES[lista.length - 1]}` : 'No acertada'),
+    crear('p', 'resultado__lugares', texto),
+  );
   const equivalentes = Object.entries(p.equivalentes || {});
   if (equivalentes.length) {
-    mas.push(crear('h4', 'subtitulo', 'Y en otros sitios se dice…'));
+    detalle.append(crear('h4', 'subtitulo', 'Y en otros sitios se dice…'));
     const dl = crear('dl', 'equivalentes');
     for (const [lugar, dicho] of equivalentes) dl.append(crear('dt', '', lugar), crear('dd', '', dicho));
-    mas.push(dl);
+    detalle.append(dl);
   }
-
   if (p.curiosidad) {
-    mas.push(crear('h4', 'subtitulo', 'Curiosidad'));
-    mas.push(crear('p', 'curiosidad', p.curiosidad));
+    detalle.append(crear('h4', 'subtitulo', 'Curiosidad'));
+    detalle.append(crear('p', 'curiosidad', p.curiosidad));
   }
 
-  // Sin nada más que contar, la tarjeta no se despliega.
-  if (!mas.length) {
-    const tarjeta = crear('div', 'tarjeta resultado__palabra');
-    tarjeta.append(...cabecera);
-    return tarjeta;
-  }
-
-  const tarjeta = crear('details', 'tarjeta resultado__palabra');
-  const resumen = crear('summary', 'resultado__resumen');
-  resumen.append(...cabecera, crear('span', 'resultado__mas', 'Saber más'));
-  tarjeta.append(resumen, ...mas);
-  return tarjeta;
+  const desplegable = crear('details');
+  desplegable.append(resumen, detalle);
+  const li = crear('li');
+  li.append(desplegable);
+  return li;
 }
+
+// Frase de la ficha final según los aciertos del día (de ninguno a todos).
+const FRASES = [
+  'Esta vez no ha podido ser.',
+  'Una palabra en su sitio. Algo es algo.',
+  'Buen ojo de cartógrafo.',
+  'Ni una palabra fuera de su lugar.',
+];
+
+// Globo terráqueo: marca de la ficha final, lleno si se acertó la palabra.
+const GLOBO = '<circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c3 3 3 16 0 19M12 2.5c-3 3-3 16 0 19"/>';
 
 function pintarResultado() {
   const caja = $('resultado');
   caja.hidden = !terminada;
+  // Al terminar se ocultan la palabra y el mapa: la pantalla final cabe sin desplazarse.
+  $('juego').classList.toggle('terminada', terminada);
   if (!terminada) return;
 
   const aciertos = acertadas();
-  let titulo;
-  if (dia.length === 1) {
-    titulo = aciertos ? `¡Acertaste ${ORDINALES[intentos.length - 1]}!` : 'Esta vez no ha podido ser';
-  } else if (aciertos === dia.length) {
-    titulo = `¡Acertaste las ${CUANTAS[aciertos] || aciertos}!`;
-  } else if (aciertos === 0) {
-    titulo = 'Esta vez no ha podido ser';
-  } else {
-    titulo = `Acertaste ${CUANTAS[aciertos] || aciertos} de ${CUANTAS[dia.length] || dia.length}`;
-  }
-  $('resultado-titulo').textContent = titulo;
+  const marcas = $('resultado-marcas');
+  marcas.innerHTML = rondas
+    .map((lista) => `<svg class="${lista.some((i) => i.acierto) ? 'bien' : 'mal'}" viewBox="0 0 24 24" aria-hidden="true">${GLOBO}</svg>`)
+    .join('');
+  marcas.setAttribute('aria-label', `${aciertos} ${aciertos === 1 ? 'acierto' : 'aciertos'} de ${dia.length}`);
+  $('resultado-cifra').innerHTML = `${aciertos} <small>de ${dia.length}</small>`;
+  $('resultado-frase').textContent = FRASES[Math.round((aciertos / dia.length) * 3)];
 
-  $('resultado-palabras').replaceChildren(...dia.map((p, i) => tarjetaPalabra(p, rondas[i])));
+  $('resultado-palabras').replaceChildren(...dia.map((p, i) => lineaPalabra(p, rondas[i])));
 
   // Estadísticas
   pintarEstadisticas($('estadisticas'));
@@ -1146,9 +1153,9 @@ function pintarResultado() {
 function pintarEstadisticas(stats) {
   const s = datos.stats;
   const cifras = [
-    [s.jugadas, 'Jugadas'],
+    [s.jugadas, 'Días'],
     [s.palabras ? Math.round((s.acertadas / s.palabras) * 100) + '%' : '0%', 'Aciertos'],
-    [rachaActual(), 'Racha actual'],
+    [rachaActual(), 'Racha'],
     [s.mejor, 'Mejor racha'],
   ];
   stats.replaceChildren();
