@@ -660,11 +660,19 @@ button { font: inherit; color: inherit; }
 }
 
 /* Botón para volver al mapa entero (solo con el mapa ampliado) */
-.mapa__encuadrar {
+/* Ver el mapa entero, acercar y alejar, en columna sobre el Pacífico (abajo a
+   la izquierda, donde no tapan ningún país) */
+.mapa__controles {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  bottom: 8px;
+  left: 8px;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mapa__boton {
   width: 40px;
   height: 40px;
   display: grid;
@@ -676,10 +684,14 @@ button { font: inherit; color: inherit; }
   box-shadow: 0 1px 4px rgba(43, 36, 32, .2);
   cursor: pointer;
   touch-action: manipulation;
-  animation: fundido .2s ease both;
 }
 
-.mapa__encuadrar svg {
+#boton-encuadrar { animation: fundido .2s ease both; }
+
+.mapa__boton:disabled { cursor: default; border-color: var(--linea); box-shadow: none; }
+.mapa__boton:disabled svg { opacity: .35; }
+
+.mapa__boton svg {
   width: 18px;
   height: 18px;
   fill: none;
@@ -689,7 +701,7 @@ button { font: inherit; color: inherit; }
   stroke-linejoin: round;
 }
 
-.mapa__encuadrar:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.mapa__boton:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
 
 /* ---------- Barra de elección ---------- */
 

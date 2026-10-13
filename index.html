@@ -111,10 +111,18 @@
       <div class="mapa-hueco">
         <section class="mapa" id="mapa" aria-label="Mapa del mundo hispanohablante">
           <div class="mapa__camara" id="camara"></div>
-          <!-- Vuelve al mapa entero; solo se ve con el mapa ampliado -->
-          <button class="mapa__encuadrar" id="boton-encuadrar" type="button" aria-label="Ver el mapa entero" hidden>
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 7V2h5M13 2h5v5M18 13v5h-5M7 18H2v-5" /></svg>
-          </button>
+          <!-- Acercar, alejar y volver al mapa entero (este solo se ve con el mapa ampliado) -->
+          <div class="mapa__controles">
+            <button class="mapa__boton" id="boton-encuadrar" type="button" aria-label="Ver el mapa entero" hidden>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 7V2h5M13 2h5v5M18 13v5h-5M7 18H2v-5" /></svg>
+            </button>
+            <button class="mapa__boton" id="boton-acercar" type="button" aria-label="Acercar el mapa">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>
+            </button>
+            <button class="mapa__boton" id="boton-alejar" type="button" aria-label="Alejar el mapa" disabled>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12" /></svg>
+            </button>
+          </div>
         </section>
       </div>
 
@@ -174,7 +182,7 @@
     <h2 class="dialogo__titulo" id="ayuda-titulo">Cómo se juega</h2>
     <p>Cada día aparecen tres palabras del español que solo se usan en algunos lugares del mundo hispanohablante. Se juegan una tras otra.</p>
     <p>Con cada una, <strong>toca en el mapa un lugar donde se diga</strong> y confirma. Si se usa en varios sitios, vale cualquiera. Tienes <strong>tres intentos por palabra</strong>.</p>
-    <p>Para ver de cerca los países pequeños, <strong>amplía el mapa</strong> pellizcando con dos dedos o tocando dos veces, y muévelo con un dedo.</p>
+    <p>Para ver de cerca los países pequeños, <strong>amplía el mapa</strong> pellizcando con dos dedos, tocando dos veces o con los botones + y −, y muévelo con un dedo.</p>
     <h3 class="subtitulo">Pistas</h3>
     <ul class="dialogo__lista">
       <li><strong>Al primer fallo</strong>, una flecha señala hacia el lugar correcto más cercano y te dice si estás <em>caliente</em> (a menos de 1.500 km), <em>templado</em> (a menos de 4.000 km) o <em>frío</em>. Desde el segundo fallo, también te dice si <em>te acercas</em> o <em>te alejas</em>.</li>

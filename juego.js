@@ -381,6 +381,8 @@ function pintarCamara() {
   // Los nombres, las flechas y las marcas se encogen lo mismo para no crecer en pantalla.
   el.style.setProperty('--inverso', 1 / camara.z);
   $('boton-encuadrar').hidden = camara.z < 1.01;
+  $('boton-alejar').disabled = camara.z < 1.01;
+  $('boton-acercar').disabled = camara.z > ZOOM_MAX - 0.01;
   if (!el.classList.contains('mapa__camara--moviendo')) ajustarTrazo();
   if (!$('bocadillo').hidden) colocarBocadillo();
 }
@@ -516,8 +518,9 @@ function centrarSolucion() {
 function prepararCamara() {
   const mapa = $('mapa');
   const punteros = new Map();   // pointerId → punto de la ventana
-  let gesto = null;             // { tipo: 'toque' | 'arrastre' | 'pellizco', … }
+  let gesto = null;             // { tipo: 'toque' | 'arrastre' | 'pellizco' | 'fuera', … }
   let ultimoToque = null;       // { t, x, y } para reconocer el doble toque
+  let fuera = null;             // pellizco que no cabe entero en el mapa (ver más abajo)
 
   const dosPrimeros = () => [...punteros.values()].slice(0, 2);
 
@@ -533,12 +536,13 @@ function prepararCamara() {
   };
 
   mapa.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.bocadillo, .mapa__encuadrar')) return;
+    if (e.target.closest('.bocadillo, .mapa__controles')) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     cancelarAnimacion();
     try { mapa.setPointerCapture(e.pointerId); } catch (error) { /* sin captura, se sigue igual */ }
     const p = enVentana(e.clientX, e.clientY);
     punteros.set(e.pointerId, p);
+    if (fuera) return;
     if (punteros.size === 1) {
       // El navegador puede mover el clic de un toque hacia el botón más cercano;
       // se guarda dónde cayó de verdad el dedo.
@@ -552,6 +556,7 @@ function prepararCamara() {
     if (!punteros.has(e.pointerId)) return;
     const p = enVentana(e.clientX, e.clientY);
     punteros.set(e.pointerId, p);
+    if (gesto.tipo === 'fuera') return;
 
     if (gesto.tipo === 'pellizco') {
       const [a, b] = dosPrimeros();
@@ -578,6 +583,7 @@ function prepararCamara() {
   const soltar = (e) => {
     if (!punteros.has(e.pointerId)) return;
     punteros.delete(e.pointerId);
+    if (gesto.tipo === 'fuera') return;
 
     if (gesto.tipo === 'pellizco') {
       if (punteros.size >= 2) empezarPellizco();
@@ -606,17 +612,101 @@ function prepararCamara() {
   mapa.addEventListener('pointercancel', soltar);
 
   // Ratón y panel táctil del ordenador: la rueda (o pellizcar en el panel) acerca y aleja.
-  mapa.addEventListener('wheel', (e) => {
+  const rueda = (e, p) => {
     e.preventDefault();
     cancelarAnimacion();
     const delta = e.deltaY * (e.deltaMode === 1 ? 16 : 1);
-    const p = enVentana(e.clientX, e.clientY);
     enMovimiento(true);
     moverCamara(ampliarEn(p.x, p.y, camara.z * Math.exp(-delta * (e.ctrlKey ? 0.01 : 0.002))));
     clearTimeout(finRueda);
     finRueda = setTimeout(() => enMovimiento(false), 200);
+  };
+  mapa.addEventListener('wheel', (e) => rueda(e, enVentana(e.clientX, e.clientY)), { passive: false });
+
+  // La página no se amplía (ver bloquearZoomPagina), así que pellizcar fuera del
+  // mapa amplía el mapa: con dos dedos fuera, con uno dentro y otro fuera, o con
+  // Ctrl + rueda o el panel táctil del ordenador. Si el centro de los dedos cae
+  // dentro del mapa, ese punto se queda bajo los dedos; si no, se amplía desde el
+  // centro del mapa.
+  const mapaVisible = () => mapa.clientWidth > 0 && !document.querySelector('dialog[open]');
+  const centroMapa = () => { const { ancho, alto } = ventanaMapa(); return { x: ancho / 2, y: alto / 2 }; };
+  const dentro = (p) => { const { ancho, alto } = ventanaMapa(); return p.x >= 0 && p.y >= 0 && p.x <= ancho && p.y <= alto; };
+  const dedosFuera = (e) => fuera.ids.map((id) => [...e.touches].find((t) => t.identifier === id));
+  const medir = (a, b) => {
+    const pa = enVentana(a.clientX, a.clientY);
+    const pb = enVentana(b.clientX, b.clientY);
+    return { distancia: Math.hypot(pa.x - pb.x, pa.y - pb.y) || 1, centro: { x: (pa.x + pb.x) / 2, y: (pa.y + pb.y) / 2 } };
+  };
+
+  document.addEventListener('touchstart', (e) => {
+    // Con los dos dedos en el mapa, el pellizco ya lo lleva el mapa.
+    if (fuera || e.touches.length < 2 || punteros.size >= 2 || !mapaVisible()) return;
+    const [a, b] = e.touches;
+    const { distancia, centro } = medir(a, b);
+    const sigue = dentro(centro);
+    fuera = { ids: [a.identifier, b.identifier], distancia, sigue, centro: sigue ? centro : centroMapa(), base: camaraPx() };
+    gesto = { tipo: 'fuera' };
+    cancelarAnimacion();
+    enMovimiento(true);
+  });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!fuera) return;
+    const [a, b] = dedosFuera(e);
+    if (!a || !b) return;
+    if (e.cancelable) e.preventDefault();
+    const { distancia, centro } = medir(a, b);
+    const z = limitarZoom(fuera.base.z * (distancia / fuera.distancia));
+    const ahora = fuera.sigue ? centro : fuera.centro;
+    const mx = (fuera.centro.x - fuera.base.x) / fuera.base.z;
+    const my = (fuera.centro.y - fuera.base.y) / fuera.base.z;
+    moverCamara({ z, x: ahora.x - mx * z, y: ahora.y - my * z });
   }, { passive: false });
 
+  const acabarFuera = (e) => {
+    if (!fuera) return;
+    const [a, b] = dedosFuera(e);
+    if (a && b) return;
+    fuera = null;
+    enMovimiento(false);
+    // Si queda algún dedo en el mapa, sigue arrastrando desde donde está.
+    if (punteros.size >= 2) empezarPellizco();
+    else if (punteros.size === 1) gesto = { tipo: 'arrastre', ultimo: [...punteros.values()][0] };
+  };
+  document.addEventListener('touchend', acabarFuera);
+  document.addEventListener('touchcancel', acabarFuera);
+
+  document.addEventListener('wheel', (e) => {
+    if (e.ctrlKey && !e.target.closest('#mapa') && mapaVisible()) rueda(e, centroMapa());
+  }, { passive: false });
+
+  // Safari del Mac: pellizcar en el panel táctil no manda rueda sino gesture*
+  // (en iPhone y iPad esos gestos ya los llevan los toques de arriba).
+  if (navigator.maxTouchPoints === 0) {
+    let inicio = null;
+    document.addEventListener('gesturestart', (e) => {
+      if (!mapaVisible()) return;
+      const p = enVentana(e.clientX, e.clientY);
+      cancelarAnimacion();
+      enMovimiento(true);
+      inicio = { p: dentro(p) ? p : centroMapa(), base: camaraPx() };
+    });
+    document.addEventListener('gesturechange', (e) => {
+      if (inicio) moverCamara(ampliarEn(inicio.p.x, inicio.p.y, inicio.base.z * e.scale, inicio.base));
+    });
+    document.addEventListener('gestureend', () => {
+      if (inicio) enMovimiento(false);
+      inicio = null;
+    });
+  }
+
+  // Botones: acercan y alejan desde el centro de la ventana.
+  const ampliarCentro = (factor) => {
+    const { ancho, alto } = ventanaMapa();
+    animarCamara(ampliarEn(ancho / 2, alto / 2, camara.z * factor), 250);
+  };
+  $('boton-acercar').addEventListener('click', () => ampliarCentro(2));
+  $('boton-alejar').addEventListener('click', () => ampliarCentro(1 / 2));
   $('boton-encuadrar').addEventListener('click', () => animarCamara(CAMARA_ENTERA));
 
   // Si cambia el tamaño de la ventana del mapa, se repinta: como la cámara va en
