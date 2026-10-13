@@ -106,6 +106,7 @@ let palabra = null;      // dia[ronda]
 let intentos = [];       // rondas[ronda]
 let palabraTerminada = false;
 let terminada = false;   // todas las palabras del día jugadas
+let enResultado = false; // a la vista la ficha final (tras «Ver resultado» o al volver con el día jugado)
 let seleccion = null;    // código del lugar elegido y aún no confirmado
 let opciones = null;     // { lugares, x, y } si un toque cae entre varios lugares (x, y: fracción del mapa entero)
 let temporizador = null;
@@ -915,17 +916,21 @@ function confirmar() {
   // La cámara enseña la solución o, tras un fallo, el lugar fallado con su flecha.
   if (palabraTerminada) centrarSolucion();
   else mostrarLugar(codigo);
-  if (terminada) {
-    avisarAlmanaque();
-    setTimeout(() => $('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
-  } else if (palabraTerminada) {
-    $('boton-siguiente').focus({ preventScroll: true });
-  }
+  // Tras la última palabra, el mapa se queda a la vista hasta pulsar «Ver resultado».
+  if (terminada) avisarAlmanaque();
+  if (palabraTerminada) $('boton-siguiente').focus({ preventScroll: true });
 }
 
-// Pasa a la siguiente palabra del día con el mapa limpio.
+// Pasa a la siguiente palabra del día con el mapa limpio o, tras la última, al resultado.
 function siguiente() {
-  if (!palabraTerminada || terminada) return;
+  if (!palabraTerminada || enResultado) return;
+  if (terminada) {
+    enResultado = true;
+    pintarPalabra();
+    pintar(false);
+    $('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
   ponerRonda(ronda + 1);
   for (const [codigo, etiqueta] of Object.entries(etiquetas)) {
     const flecha = etiqueta.querySelector('.flecha');
@@ -1011,7 +1016,7 @@ function pintarIntentos() {
   // la partida en la barra de abajo (pintarPista) y, al terminar el día, aquí.
   const significado = $('palabra-significado');
   significado.textContent = textosSignificado().join(' o ');
-  significado.hidden = !terminada || !significado.textContent;
+  significado.hidden = !enResultado || !significado.textContent;
 }
 
 const textosSignificado = () => significados(palabra).map((s) => `«${s.significado}»`);
@@ -1057,11 +1062,13 @@ function pintarPista(animar) {
     region.hidden = true;
   }
 
-  $('barra').hidden = terminada;
+  $('barra').hidden = enResultado;
   // Durante la partida, la página entera cabe en la pantalla (ver .en-juego en estilos.css).
-  document.body.classList.toggle('en-juego', !terminada);
-  $('boton-siguiente').hidden = !palabraTerminada || terminada;
-  if (terminada) return;
+  document.body.classList.toggle('en-juego', !enResultado);
+  const seguir = $('boton-siguiente');
+  seguir.hidden = !palabraTerminada || enResultado;
+  seguir.textContent = terminada ? 'Ver resultado' : 'Siguiente palabra →';
+  if (enResultado) return;
 
   pista.replaceChildren();
   const conTarjeta = !palabraTerminada && !!ultimo;
@@ -1217,10 +1224,10 @@ const GLOBO = '<circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c3 3 3
 
 function pintarResultado() {
   const caja = $('resultado');
-  caja.hidden = !terminada;
-  // Al terminar se ocultan la palabra y el mapa: la pantalla final cabe sin desplazarse.
-  $('juego').classList.toggle('terminada', terminada);
-  if (!terminada) return;
+  caja.hidden = !enResultado;
+  // En la ficha final se ocultan la palabra y el mapa: la pantalla final cabe sin desplazarse.
+  $('juego').classList.toggle('terminada', enResultado);
+  if (!enResultado) return;
 
   const aciertos = acertadas();
   const marcas = $('resultado-marcas');
@@ -1412,6 +1419,7 @@ async function iniciar() {
     r = Math.min(Math.max(0, Number(p.ronda) || 0), dia.length - 1);
     terminada = rondas.every(acabada);
     if (terminada) r = dia.length - 1;
+    enResultado = terminada;
   } else {
     datos.partida = null;
   }

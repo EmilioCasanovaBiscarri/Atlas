@@ -719,7 +719,7 @@ button { font: inherit; color: inherit; }
 
 .barra__pistas { display: grid; }
 
-/* Resultado de la palabra, con el botón «Siguiente palabra» encima */
+/* Resultado de la palabra, con el botón «Siguiente palabra» (o «Ver resultado») encima */
 .barra__final { display: grid; gap: 8px; }
 #boton-siguiente { animation: fundido .3s ease both; }
 
