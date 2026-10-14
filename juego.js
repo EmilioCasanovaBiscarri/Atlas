@@ -1012,11 +1012,11 @@ function pintarIntentos() {
   const quedan = CONFIG.INTENTOS - intentos.length;
   caja.setAttribute('aria-label', palabraTerminada ? 'Palabra terminada' : `Quedan ${quedan} intentos`);
 
-  // Al acabar cada palabra se desvela su significado (o sus significados): durante
-  // la partida en la barra de abajo (pintarPista) y, al terminar el día, aquí.
+  // Bajo la palabra va siempre su significado (o sus significados), para que se
+  // sepa qué acepción se busca: «coche» es «cerdo», no «automóvil».
   const significado = $('palabra-significado');
   significado.textContent = textosSignificado().join(' o ');
-  significado.hidden = !enResultado || !significado.textContent;
+  significado.hidden = !significado.textContent;
 }
 
 const textosSignificado = () => significados(palabra).map((s) => `«${s.significado}»`);
@@ -1166,7 +1166,6 @@ function crear(etiqueta, clase, texto) {
 function lineaPalabra(p, lista) {
   const ultimo = lista[lista.length - 1];
   const acierto = !!(ultimo && ultimo.acierto);
-  // El significado no se muestra durante la partida: se desvela aquí.
   const sentidos = significados(p);
   let texto;
   if (sentidos.length > 1) {
