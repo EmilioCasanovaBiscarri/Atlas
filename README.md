@@ -58,8 +58,8 @@ Cada palabra:
   los demás.
 - `equivalentes` puede quedar vacío (`{}`): entonces no se muestra esa parte.
 - Los días se recorren en orden desde `FECHA_INICIO` (en `juego.js`) y, al acabarse,
-  se vuelve a empezar. Hay 91 días: el último es el 31 de diciembre de 2026 y el
-  1 de enero de 2027 vuelve el día 1. Añade los nuevos **al final** para no cambiar los ya jugados.
+  se vuelve a empezar. Hay 181 días: el último es el 31 de marzo de 2027 y el
+  1 de abril de 2027 vuelve el día 1. Añade los nuevos **al final** para no cambiar los ya jugados.
   El primer día (`guagua`) es de cuando Atlas tenía una sola palabra; el juego admite
   días con cualquier número de palabras.
 - La racha cuenta los días seguidos en que se termina la partida, se acierte o no,
